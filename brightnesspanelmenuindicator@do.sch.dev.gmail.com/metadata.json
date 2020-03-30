@@ -1,7 +1,6 @@
 {
   "name": "Brightness Panel Menu Indicator",
-  "description": "Shows a brightness indicator on panel menu if a backlight device is avaliable, that allows to change brightness through scrolling on it.",
-  "url": "https://github.com/do-sch/gnome-shell-brightness-panel-menu-indicator",
+  "description": "If a backlight device is available, this extension shows a brightness indicator on panel menu, that allows changing brightness through scrolling on it. Useful, when using ddcci-driver-linux on a desktop PC without native keyboard buttons to change brightness.",
   "uuid": "brightnesspanelmenuindicator@do.sch.dev.gmail.com",
   "shell-version": [
     "3.36"
