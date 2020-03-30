@@ -89,7 +89,7 @@ function enable() {
 	brightnessIcon = new Indicator();
 	
 	// insert indicator
-	aggregateMenu._indicators.insert_child_at_index(brightnessIcon, 9);
+	aggregateMenu._indicators.insert_child_at_index(brightnessIcon, 8);
 	
 }
 
