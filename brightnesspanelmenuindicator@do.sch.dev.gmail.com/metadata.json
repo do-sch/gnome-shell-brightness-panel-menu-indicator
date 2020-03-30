@@ -1,0 +1,9 @@
+{
+  "name": "Brightness Panel Menu Indicator",
+  "description": "Shows a brightness indicator on panel menu if a backlight device is avaliable, that allows to change brightness through scrolling on it.",
+  "url": "https://github.com/do-sch/gnome-shell-brightness-panel-menu-indicator",
+  "uuid": "brightnesspanelmenuindicator@do.sch.dev.gmail.com",
+  "shell-version": [
+    "3.36"
+  ]
+}
