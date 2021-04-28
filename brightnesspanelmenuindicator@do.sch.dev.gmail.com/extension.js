@@ -100,7 +100,7 @@ function disable() {
 	// disconnect
 	brightnessIcon.disconnectVisible();
 	
-	// remove references
+	// destroy Objects
 	aggregatedBrightnessIndicator = null;
 	brightnessIcon = null;
 }
