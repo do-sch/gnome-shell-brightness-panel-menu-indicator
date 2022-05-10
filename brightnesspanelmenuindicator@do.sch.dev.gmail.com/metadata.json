@@ -4,6 +4,6 @@
   "url": "https://github.com/do-sch/gnome-shell-brightness-panel-menu-indicator",
   "uuid": "brightnesspanelmenuindicator@do.sch.dev.gmail.com",
   "shell-version": [
-    "3.36", "3.38", "40"
+    "3.36", "3.38", "40", "41", "42"
   ]
 }
