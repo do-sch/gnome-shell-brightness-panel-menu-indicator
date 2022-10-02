@@ -24,13 +24,34 @@ const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
-const aggregateMenu = Main.panel.statusArea.aggregateMenu;
+const brightnessIconName = 'display-brightness-symbolic';
 
-var aggregatedBrightnessIndicator = null;
+const quickSettings = Main.panel.statusArea.quickSettings
+	? Main.panel.statusArea.quickSettings
+	: Main.panel.statusArea.aggregateMenu;
+
+var brightnessIndicator = null;
+var brightnessSlider = null;
 var brightnessIcon = null;
 
 
-var Indicator = GObject.registerClass(
+function icon_scrolled(actor, event) {
+	// pass event to slider
+	let res = brightnessSlider.emit('scroll-event', event);
+
+	// return if slider is visible or event is propagated
+	if (res == Clutter.EVENT_PROPAGATE || brightnessIndicator.menu.actor.mapped)
+		return res;
+
+	// show OSD
+	let gicon = new Gio.ThemedIcon({ name: brightnessIconName });
+	let value = brightnessSlider.value;
+	Main.osdWindowManager.show(-1, gicon, null, value);
+
+	return res;
+}
+
+
 class Indicator extends St.BoxLayout {
 	_init() {
 		super._init({
@@ -38,69 +59,82 @@ class Indicator extends St.BoxLayout {
 			reactive: true,
 			visible: true,
 		});
-		
+
 		// create and add icon
 		let icon = new St.Icon({
 			style_class: 'system-status-icon',
-			icon_name: 'display-brightness-symbolic'
+			icon_name: brightnessIconName
 		});
 		this.add_actor(icon);
-		
-		this.visible = aggregatedBrightnessIndicator._item.visible;
+
+		this.visible = brightnessIndicator._item.visible;
 		this._connectVisible();
 
 	}
-	
+
 	_connectVisible() {
 		// Hide and show icon together with the slider
-		this._visible_id = aggregatedBrightnessIndicator._item.connect('notify::visible', (function(actor) {
-			this.visible = actor.visible;
-		}).bind(this));
+		this._visible_id = brightnessIndicator._item.connect(
+			'notify::visible',
+			(function(actor) { this.visible = actor.visible; }).bind(this)
+		);
 	}
-	
+
 	disconnectVisible() {
 		// disconnect signal
-		aggregatedBrightnessIndicator._item.disconnect(this._visible_id);
+		brightnessIndicator._item.disconnect(this._visible_id);
 	}
 
 	vfunc_scroll_event() {
-		// pass event to slider
-		let result = aggregatedBrightnessIndicator._slider.emit('scroll-event', Clutter.get_current_event());
-		
-		// return if slider is visible or event is propagated
-		if (result == Clutter.EVENT_PROPAGATE || aggregatedBrightnessIndicator.menu.actor.mapped)
-			return result;
-		
-		// show OSD
-		let gicon = new Gio.ThemedIcon({ name: 'display-brightness-symbolic' });
-		let value = aggregatedBrightnessIndicator._slider.value;
-		Main.osdWindowManager.show(-1, gicon, null, value);
-		
-		return result;
+		return icon_scrolled(this, Clutter.get_current_event());
 	}
-});
+}
 
 
 function enable() {
 	// get brightness
-	aggregatedBrightnessIndicator = aggregateMenu._brightness;
-	
-	// create indicator
-	brightnessIcon = new Indicator();
-	
-	// insert indicator
-	aggregateMenu._indicators.insert_child_at_index(brightnessIcon, 7);
-	
+	brightnessIndicator = quickSettings._brightness;
+
+	// Until Gnome 42, _brightness was not derived from Indicator
+	if (brightnessIndicator._item){
+		// get Slider
+		brightnessSlider = brightnessIndicator._slider;
+
+		// create Indicator
+		var Indicator = GObject.registerClass(Indicator);
+		brightnessIcon = new Indicator();
+
+		// insert indicator
+		quickSettings._indicators.insert_child_at_index(brightnessIcon, 7);
+	} else {
+		// add Icon
+		brightnessIcon = brightnessIndicator._addIndicator();
+		brightnessIcon.reactive = true;
+		brightnessIcon.connect('scroll-event', icon_scrolled);
+		brightnessIcon.icon_name = brightnessIconName;
+
+		// The brightnessIndicator wanted in callback is within quickSettingsItems
+		brightnessIndicator = brightnessIndicator.quickSettingsItems.at(0)
+		// get Slider
+		brightnessSlider = brightnessIndicator.slider;
+	}
 }
 
+
 function disable() {
-	// remove icon
-	aggregateMenu._indicators.remove_child(brightnessIcon);
-	
-	// disconnect
-	brightnessIcon.disconnectVisible();
-	
-	// destroy Objects
-	aggregatedBrightnessIndicator = null;
+	if (brightnessIndicator._item){
+		// remove icon
+		quickSettings._indicators.remove_child(brightnessIcon);
+
+		// disconnect
+		brightnessIcon.disconnectVisible();
+	} else {
+		// undo _addIndicator
+		brightnessIndicator.remove_actor(brightnessIcon);
+	}
+
+	// cleanup
+	brightnessSlider = null;
+	brightnessIndicator = null;
 	brightnessIcon = null;
 }
