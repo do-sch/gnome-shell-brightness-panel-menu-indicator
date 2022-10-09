@@ -31,6 +31,7 @@ const quickSettings = Main.panel.statusArea.quickSettings
 	: Main.panel.statusArea.aggregateMenu;
 
 var brightnessIndicator = null;
+var brightnessIndicatorMenu = null;
 var brightnessSlider = null;
 var brightnessIcon = null;
 
@@ -40,7 +41,7 @@ function icon_scrolled(actor, event) {
 	let res = brightnessSlider.emit('scroll-event', event);
 
 	// return if slider is visible or event is propagated
-	if (res == Clutter.EVENT_PROPAGATE || brightnessIndicator.menu.actor.mapped)
+	if (res == Clutter.EVENT_PROPAGATE || brightnessIndicatorMenu.actor.mapped)
 		return res;
 
 	// show OSD
@@ -97,8 +98,9 @@ function enable() {
 
 	// Until Gnome 42, _brightness was not derived from Indicator
 	if (brightnessIndicator._item){
-		// get Slider
+		// get Slider and Menu
 		brightnessSlider = brightnessIndicator._slider;
+		brightnessIndicatorMenu = brightnessIndicator.menu;
 
 		// create Indicator
 		var Indicator = GObject.registerClass(Indicator);
@@ -114,9 +116,10 @@ function enable() {
 		brightnessIcon.icon_name = brightnessIconName;
 
 		// The brightnessIndicator wanted in callback is within quickSettingsItems
-		brightnessIndicator = brightnessIndicator.quickSettingsItems.at(0)
+		let quickSettingsItem = brightnessIndicator.quickSettingsItems.at(0);
+		brightnessIndicatorMenu = quickSettingsItem.menu;
 		// get Slider
-		brightnessSlider = brightnessIndicator.slider;
+		brightnessSlider = quickSettingsItem.slider;
 	}
 }
 
@@ -135,6 +138,7 @@ function disable() {
 
 	// cleanup
 	brightnessSlider = null;
+	brightnessIndicatorMenu = null;
 	brightnessIndicator = null;
 	brightnessIcon = null;
 }
