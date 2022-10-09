@@ -53,43 +53,44 @@ function icon_scrolled(actor, event) {
 }
 
 
-class Indicator extends St.BoxLayout {
-	_init() {
-		super._init({
-			style_class: 'panel-status-indicators-box',
-			reactive: true,
-			visible: true,
-		});
+var BrightnessIndicator = GObject.registerClass(
+    class BrightnessIndicator extends St.BoxLayout {
+	    _init() {
+		    super._init({
+			    style_class: 'panel-status-indicators-box',
+			    reactive: true,
+			    visible: true,
+		    });
 
-		// create and add icon
-		let icon = new St.Icon({
-			style_class: 'system-status-icon',
-			icon_name: brightnessIconName
-		});
-		this.add_actor(icon);
+		    // create and add icon
+		    let icon = new St.Icon({
+			    style_class: 'system-status-icon',
+			    icon_name: brightnessIconName
+		    });
+		    this.add_actor(icon);
 
-		this.visible = brightnessIndicator._item.visible;
-		this._connectVisible();
+		    this.visible = brightnessIndicator._item.visible;
+		    this._connectVisible();
 
-	}
+	    }
 
-	_connectVisible() {
-		// Hide and show icon together with the slider
-		this._visible_id = brightnessIndicator._item.connect(
-			'notify::visible',
-			(function(actor) { this.visible = actor.visible; }).bind(this)
-		);
-	}
+	    _connectVisible() {
+		    // Hide and show icon together with the slider
+		    this._visible_id = brightnessIndicator._item.connect(
+			    'notify::visible',
+			    (function(actor) { this.visible = actor.visible; }).bind(this)
+		    );
+	    }
 
-	disconnectVisible() {
-		// disconnect signal
-		brightnessIndicator._item.disconnect(this._visible_id);
-	}
+	    disconnectVisible() {
+		    // disconnect signal
+		    brightnessIndicator._item.disconnect(this._visible_id);
+	    }
 
-	vfunc_scroll_event() {
-		return icon_scrolled(this, Clutter.get_current_event());
-	}
-}
+	    vfunc_scroll_event() {
+		    return icon_scrolled(this, Clutter.get_current_event());
+	    }
+});
 
 
 function enable() {
@@ -103,8 +104,7 @@ function enable() {
 		brightnessIndicatorMenu = brightnessIndicator.menu;
 
 		// create Indicator
-		var Indicator = GObject.registerClass(Indicator);
-		brightnessIcon = new Indicator();
+		brightnessIcon = new BrightnessIndicator();
 
 		// insert indicator
 		quickSettings._indicators.insert_child_at_index(brightnessIcon, 7);
